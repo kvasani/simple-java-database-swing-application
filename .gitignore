@@ -1,0 +1,9 @@
+#ignore IDEA project related files
+# should make it easy to use any IDE that supports pom.xml to import this project
+/.idea/
+
+# ignore build output folder
+/target/
+
+# ignore files in database root folder, as application should generate these files at runtime
+/db/*.db
