@@ -7,3 +7,4 @@
 
 # ignore files in database root folder, as application should generate these files at runtime
 /db/*.db
+/logs/
