@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.*;
+import java.util.List;
 
 public class Main {
 
@@ -16,22 +17,21 @@ public class Main {
         //init dbhelper
         DbHelper.getInstance().init();
 
-        Contact contact = new Contact();
-        contact.setName("first name");
-        contact.setContacts("email@emaildomain.com");
-        contact.save();
+        try {
+            Contact contact = new Contact();
+            contact.setName("first name");
+            contact.setContacts("email@emaildomain.com");
+            contact.save();
 
-        //list all contacts from database
-        try(Connection con = DbHelper.getConnection(); Statement stmt = con.createStatement()){
-            try(ResultSet rs = stmt.executeQuery("SELECT * FROM contacts")) {
-                while (rs.next()) {
-                    LOGGER.debug(" >> [{}] {} ({})", new Object[]{
-                            rs.getInt("id"),
-                            rs.getString("name"),
-                            rs.getString("contacts")
-                    });
-                }
+            //list all contacts from database
+            List<Contact> contactList = ContactsHelper.getInstance().getContacts();
+
+            LOGGER.debug("count of contacts="+contactList.size());
+            for (Contact c : contactList) {
+                LOGGER.debug(" >> [{}] {} ({})", c.getId(), c.getName(), c.getContacts());
             }
+        } catch (final SQLException e) {
+            LOGGER.error("failed to process contacts", e);
         }
 
         // cleanup dbhelper
