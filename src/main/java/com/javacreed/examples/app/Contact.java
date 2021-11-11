@@ -1,11 +1,9 @@
 package com.javacreed.examples.app;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.sql.*;
 
 public class Contact {
-    private long id;
+    private long id = -1;
     private String name;
     private String contacts;
 
@@ -34,12 +32,46 @@ public class Contact {
     }
 
     public void save() throws SQLException {
-        String sql = "INSERT INTO contacts (name, contacts) VALUES (?, ?)";
-        try(Connection connection = DbHelper.getConnection(); PreparedStatement pStmt = connection.prepareStatement(sql)){
-            pStmt.setString(1,this.name);
-            pStmt.setString(2,this.contacts);
+        String SQL_INSERT = "INSERT INTO contacts (name, contacts) VALUES (?, ?)";
+        String SQL_UPDATE = "UPDATE CONTACTS set name = ?, contacts = ? where ID = ?";
 
-            pStmt.execute();
+        // save new contact
+        if (id == -1) {
+            try(Connection connection = DbHelper.getConnection();
+                PreparedStatement pStmt = connection.prepareStatement(SQL_INSERT, Statement.RETURN_GENERATED_KEYS)) {
+                pStmt.setString(1,this.name);
+                pStmt.setString(2,this.contacts);
+
+                pStmt.execute();
+
+                try (ResultSet rs = pStmt.getGeneratedKeys()) {
+                    rs.next();
+                    id = rs.getLong(1);
+                }
+            }
+        } else {
+            try(Connection connection = DbHelper.getConnection();
+                PreparedStatement pStmt = connection.prepareStatement(SQL_UPDATE)) {
+                pStmt.setString(1,this.name);
+                pStmt.setString(2,this.contacts);
+                pStmt.setLong(3, this.id);
+                pStmt.execute();
+            }
+        }
+    }
+
+    public void delete() throws SQLException {
+        final String SQL = "DELETE FROM CONTACTS WHERE ID = ?";
+
+        // ensure we are deleting record from database only if valid ID is present
+        if (id != -1) {
+            try (Connection connection = DbHelper.getConnection(); PreparedStatement pstmt = connection.prepareStatement(SQL)) {
+                pstmt.setLong(1, this.id);
+                pstmt.execute();
+
+                // reset ID to indicate current object content is not in database
+                id = -1;
+            }
         }
     }
 }
