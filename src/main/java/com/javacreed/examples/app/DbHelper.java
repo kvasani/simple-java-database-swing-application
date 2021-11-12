@@ -41,7 +41,16 @@ public class DbHelper {
         Flyway flyway = new Flyway();
         flyway.setDataSource(ds);
         flyway.migrate();
+    }
 
+    public void registerShutdownHook() {
+        Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+            @Override
+            public void run() {
+                DbHelper.LOGGER.debug("Inside Shutdown hook, closing datasource");
+                close();
+            }
+        }));
     }
 
     public void close() {
